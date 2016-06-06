@@ -4,7 +4,6 @@ from django.shortcuts import render
 
 from gallery.models import Image
 
-
 def index(request):
     '''
     This View display 20 photo on main page
@@ -106,43 +105,3 @@ def index(request):
         context=context,
         template_name='index.html'
     )
-
-
-
-
-# SELECT i.id, i.likes, i.url, i.create_at, GROUP_CONCAT(DISTINCT all_tags.title) as i_tag from gallery_image as i
-#
-# INNER JOIN gallery_image_tags AS git1 ON git1.image_id = i.id
-# INNER JOIN gallery_tag AS t1 ON git1.tag_id = t1.id and t1.title = '1'
-#
-# INNER JOIN gallery_image_tags AS git2 ON git2.image_id = i.id
-# INNER JOIN gallery_tag AS t2 ON git2.tag_id = t2.id and t2.title = '2'
-#
-# INNER JOIN gallery_image_tags AS git3 ON git3.image_id = i.id
-# INNER JOIN gallery_tag AS t3 ON git3.tag_id = t3.id and t3.title = '3'
-#
-# INNER JOIN gallery_image_tags AS all_git ON all_git.image_id = i.id
-# INNER JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
-#
-# GROUP BY (i.id)
-#
-# HAVING sum(if(all_tags.title in('1','2','3'),1,0)) = 3
-#     AND sum(if(all_tags.title in('6'),1,0)) =0
-#
-# LIMIT 20 OFFSET 20
-
-
-
-# SELECT i.id, i.url, i.create_at, GROUP_CONCAT(DISTINCT all_tags.title SEPARATOR ',') as i_tags
-# from gallery_image as i
-# INNER JOIN gallery_image_tags AS all_git ON all_git.image_id = i.id
-# INNER JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
-# GROUP BY i.id
-# HAVING
-# sum(if(all_tags.title in('1','2','3'),1,0)) = 3
-# AND
-# sum(if(all_tags.title in('6'),1,0)) = 0
-#
-# ORDER BY i.create_at DESC
-# LIMIT 20
-# OFFSET 0

@@ -3,9 +3,8 @@ from datetime import datetime
 from random import randint, random
 import csv
 
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from django.conf import settings
 
 from gallery.models import Image, Tag
 
@@ -15,10 +14,7 @@ from gallery.models import Image, Tag
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        # Создание пользователей
-
         users = {}
-
         tags = range(100)
 
         with open('test-photo.csv') as f:
