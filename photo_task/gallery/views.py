@@ -13,7 +13,14 @@ def index(request):
         image_list = Image.objects.all()[:20].select_related()
         return render(
             request=request,
-            context={'image_list': image_list},
+            context={
+                'image_list': image_list,
+                'prevprev': None,
+                'prev': None,
+                'page': 1,
+                'next': 2,
+                'nextnext': 3,
+            },
             template_name='index.html'
         )
 
@@ -33,6 +40,18 @@ def index(request):
     query = '''
     SELECT i.id, i.url, i.create_at, GROUP_CONCAT(DISTINCT all_tags.title SEPARATOR \',\') as i_tags
     from gallery_image as i
+    '''
+
+    for (index, value) in enumerate(positive_values.values()):
+        query+="""
+        INNER JOIN gallery_image_tags AS git{index} ON git{index}.image_id = i.id
+        INNER JOIN gallery_tag AS t{index} ON
+            git{index}.tag_id = t{index}.id and t{index}.title = '{value}' \n""".format(
+            value=value,
+            index=index
+        )
+
+    query+='''
     INNER JOIN gallery_image_tags AS all_git ON all_git.image_id = i.id
     INNER JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
     GROUP BY i.id
@@ -61,6 +80,7 @@ def index(request):
         offset=(page-1)*20,
         order_by=order_by
     )
+
     image_list = []
 
     negative_values.values()
@@ -86,3 +106,43 @@ def index(request):
         context=context,
         template_name='index.html'
     )
+
+
+
+
+# SELECT i.id, i.likes, i.url, i.create_at, GROUP_CONCAT(DISTINCT all_tags.title) as i_tag from gallery_image as i
+#
+# INNER JOIN gallery_image_tags AS git1 ON git1.image_id = i.id
+# INNER JOIN gallery_tag AS t1 ON git1.tag_id = t1.id and t1.title = '1'
+#
+# INNER JOIN gallery_image_tags AS git2 ON git2.image_id = i.id
+# INNER JOIN gallery_tag AS t2 ON git2.tag_id = t2.id and t2.title = '2'
+#
+# INNER JOIN gallery_image_tags AS git3 ON git3.image_id = i.id
+# INNER JOIN gallery_tag AS t3 ON git3.tag_id = t3.id and t3.title = '3'
+#
+# INNER JOIN gallery_image_tags AS all_git ON all_git.image_id = i.id
+# INNER JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
+#
+# GROUP BY (i.id)
+#
+# HAVING sum(if(all_tags.title in('1','2','3'),1,0)) = 3
+#     AND sum(if(all_tags.title in('6'),1,0)) =0
+#
+# LIMIT 20 OFFSET 20
+
+
+
+# SELECT i.id, i.url, i.create_at, GROUP_CONCAT(DISTINCT all_tags.title SEPARATOR ',') as i_tags
+# from gallery_image as i
+# INNER JOIN gallery_image_tags AS all_git ON all_git.image_id = i.id
+# INNER JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
+# GROUP BY i.id
+# HAVING
+# sum(if(all_tags.title in('1','2','3'),1,0)) = 3
+# AND
+# sum(if(all_tags.title in('6'),1,0)) = 0
+#
+# ORDER BY i.create_at DESC
+# LIMIT 20
+# OFFSET 0
