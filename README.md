@@ -8,6 +8,7 @@
 
 генерация данных
 >python manage.py load_data
+
 >python manage.py add_likes
 
 альтернатива генерации юзать мой дамп:
