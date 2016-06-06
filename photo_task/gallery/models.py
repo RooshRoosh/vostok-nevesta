@@ -9,9 +9,9 @@ from django.contrib.auth.models import User
 class Image(models.Model):
     user = models.ForeignKey(User)
     url = models.URLField(max_length=512)
-    tags = models.ManyToManyField(Tag)
     create_at = models.DateTimeField()
 
+    tags = models.ManyToManyField(Tag)
 
 class Tag(models.Model):
     title = models.CharField(max_length=128)
