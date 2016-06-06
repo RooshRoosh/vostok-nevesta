@@ -1,17 +1,82 @@
+{% load display_image_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title></title>
+    <link type="text/css" href="https://yastatic.net/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-{% for image in image_list %}
-    <img src="{{ image.url }}">
-    <ul>
-        {% for image_tag in image.tag_list %}
-            <li>{{ image_tag }}</li>
-        {% endfor %}
-    </ul>
-{% endfor %}
+<body class="col-md-12">
+<h1>Галлерея</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                {% if image_list %}
+                    {% for image in image_list %}
+                        <div class="col-md-4">
+                            <img src="{{ image.url }}">
+                                {{ image|display_tags }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-md-12">
+                        <h4>
+                            Ничего не найдено, попробуйте ослабить условия
+                        </h4>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <form action="" method="GET" class="">
+                <div class="form-group col-md-6 text-success">
+                    <p>Присутствующие теги</p>
+                    <label for="tag1">tag1</label><input id="tag1" type="number" min="0"  class="form-control" name="tag1" value="{{ positive_values.tag1 }}" />
+                    <label for="tag2">tag2</label><input id="tag2" type="number" min="0"  class="form-control" name="tag2" value="{{ positive_values.tag2 }}" />
+                    <label for="tag3">tag3</label><input id="tag3" type="number" min="0"  class="form-control" name="tag3" value="{{ positive_values.tag3 }}" />
+                    <label for="tag4">tag4</label><input id="tag4" type="number" min="0"  class="form-control" name="tag4" value="{{ positive_values.tag4 }}" />
+                    <label for="tag5">tag5</label><input id="tag5" type="number" min="0"  class="form-control" name="tag5" value="{{ positive_values.tag5 }}" />
+                </div>
+                <div class="form-group col-md-6 text-danger">
+                    <p>Отсутствующие теги</p>
+                    <label for="excl_tag1">tag1</label><input id="excl_tag1" type="number" min="0"  class="form-control" name="excl_tag1" value="{{ negative_values.excl_tag1 }}" />
+                    <label for="excl_tag2">tag2</label><input id="excl_tag2" type="number" min="0"  class="form-control" name="excl_tag2" value="{{ negative_values.excl_tag2 }}" />
+                    <label for="excl_tag3">tag3</label><input id="excl_tag3" type="number" min="0"  class="form-control" name="excl_tag3" value="{{ negative_values.excl_tag3 }}" />
+                </div>
+                <div class="col-md-6">
+                    <p>Сортировка</p>
+                    <label for="date">date</label><input id="date" class="" type="radio" name="order_by" value="date" />
+                    <label for="like">like</label><input id="like" class="" type="radio" name="order_by" value="like" />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="page">Страница:</label>
+                        </div>
+                        <div class="col-md-9">
+                            <select id="page" class="form-control col-md-6" name="page">
+                                {% if prev %}
+                                    {% if prevprev %}
+                                    <option>{{ prevprev }}</option>
+                                    {% endif %}
+                                {% endif %}
+                                {% if prev %}
+                                    <option>{{ prev }}</option>
+                                {% endif %}
+                                <option selected>{{ page }}</option>
+                                <option>{{ next }}</option>
+                                <option>{{ nextnext }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" value="Найти" class="btn btn-primary col-md-12">
+                        <i class="glyphicon glyphicon-search"></i> Найти
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>
