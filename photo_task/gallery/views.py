@@ -1,14 +1,16 @@
 from django.shortcuts import render
-
+from django.conf import settings
 # Create your views here.
 
-from gallery.models import Image
+from gallery.models import Image, init_tag_cache
 
 
 def index(request):
     '''
     This View display 20 photo on main page
     '''
+    TAGS = init_tag_cache()
+
     if not bool(request.GET):
         image_list = Image.objects.all()[:20].select_related()
         return render(
@@ -40,12 +42,11 @@ def index(request):
     query += '''
         (
             SELECT git.image_id, COUNT(*) as c FROM gallery_image_tags as git
-
             WHERE git.tag_id in ({positive_values})
             GROUP BY git.image_id
         ) as data
     '''.format(
-        positive_values=','.join("'"+i+"'" for i in positive_values.values())
+        positive_values=','.join("'"+TAGS[i]+"'" for i in positive_values.values())
     )
 
     query += '''
@@ -57,12 +58,12 @@ def index(request):
     '''.format(count_of_positive=len(positive_values))
 
     if negative_values:
-        query+='HAVING \n'
-        query+= "sum(if(all_tags.title in({negative_values}),1,0)) = 0 \n".format(
+        query += 'HAVING \n'
+        query += "sum(if(all_tags.title in({negative_values}),1,0)) = 0 \n".format(
             negative_values=','.join("'"+i+"'" for i in negative_values.values())
         )
 
-    query+='''
+    query += '''
         ORDER BY {order_by} DESC
         LIMIT 20
         OFFSET {offset}
@@ -71,7 +72,6 @@ def index(request):
             order_by=order_by
         )
 
-    print(query)
     image_list = []
     for image in Image.objects.raw(query):
         image.tags_list = sorted(image.i_tags.split(','))
@@ -84,8 +84,8 @@ def index(request):
         'prevprev': page-2,
         'prev': page-1,
         'page': page,
-        'next':page+1,
-        'nextnext':page+2,
+        'next': page+1,
+        'nextnext': page+2,
 
     }
 

@@ -125,3 +125,5 @@ try:
     from local_settings import *
 except:
     print('not local settings')
+
+TAGS_CACHE = None
