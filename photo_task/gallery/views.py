@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from django.shortcuts import render
 from django.conf import settings
 # Create your views here.
@@ -38,31 +39,35 @@ def index(request):
     positive_values = {tag:request.GET.get(tag) for tag in positive_tags if request.GET.get(tag)}
     negative_values = {tag:request.GET.get(tag) for tag in negative_tags if request.GET.get(tag)}
 
-    query = '''SELECT i.id, i.url, i.create_at, GROUP_CONCAT(all_tags.title SEPARATOR ',') as i_tags FROM'''
-    query += '''
+
+    # Определяем id фоток, у которых есть ВСЕ запрашиваемые теги.
+    query = '''SELECT i.id, i.url, i.create_at, GROUP_CONCAT(all_tags.title SEPARATOR ',') as i_tags FROM
         (
             SELECT git.image_id, COUNT(*) as c FROM gallery_image_tags as git
             WHERE git.tag_id in ({positive_values})
             GROUP BY git.image_id
         ) as data
-    '''.format(
-        positive_values=','.join("'"+TAGS[i]+"'" for i in positive_values.values())
-    )
 
-    query += '''
         JOIN gallery_image as i ON i.id = data.image_id
         JOIN gallery_image_tags AS all_git ON all_git.image_id = data.image_id
         JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
-        WHERE data.c ={count_of_positive}
-        GROUP BY i.id
-    '''.format(count_of_positive=len(positive_values))
 
+        WHERE data.c ={count_of_positive}
+
+        GROUP BY i.id
+    '''.format(
+        positive_values=','.join("'"+TAGS[i]+"'" for i in positive_values.values()),
+        count_of_positive=len(positive_values)
+    )
+
+    # Оставляем только те, которые не содержат не нужные теги.
     if negative_values:
         query += 'HAVING \n'
-        query += "sum(if(all_tags.title in({negative_values}),1,0)) = 0 \n".format(
-            negative_values=','.join("'"+i+"'" for i in negative_values.values())
+        query += "sum(if(all_git.tag_id in({negative_values}),1,0)) = 0 \n".format(
+            negative_values=','.join("'"+TAGS[i]+"'" for i in negative_values.values())
         )
 
+    # Сортируем подрезаем
     query += '''
         ORDER BY {order_by} DESC
         LIMIT 20
@@ -71,6 +76,8 @@ def index(request):
             offset=(page-1)*20,
             order_by=order_by
         )
+
+    print(query)
 
     image_list = []
     for image in Image.objects.raw(query):
