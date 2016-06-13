@@ -56,23 +56,22 @@ def index(request):
     positive_tags = ['tag'+str(i) for i in range(1, 6)]
     negative_tags = ['excl_tag'+str(i) for i in range(1, 4)]
 
-    positive_values = {tag: request.GET.get(tag) for tag in positive_tags if request.GET.get(tag)}
-    negative_values = {tag: request.GET.get(tag) for tag in negative_tags if request.GET.get(tag)}
+    positive_values = {tag:request.GET.get(tag) for tag in positive_tags if request.GET.get(tag)}
+    negative_values = {tag:request.GET.get(tag) for tag in negative_tags if request.GET.get(tag)}
 
     # Определяем id фоток, у которых есть ВСЕ запрашиваемые теги.
     query = '''SELECT i.id, i.url, i.create_at, GROUP_CONCAT(all_tags.title SEPARATOR ',') as i_tags FROM
         (
-            SELECT git.image_id, COUNT(*) as c FROM gallery_image_tags as git
-            '''
+            SELECT git.image_id, COUNT(*) as c FROM gallery_image_tags as git'''
     if positive_values:
-        query += '''WHERE git.tag_id in ({positive_values})'''.format(
-            positive_values=','.join("'"+TAGS.get(i, '0')+"'" for i in positive_values.values())
-        )
-
+        query+='''
+            WHERE git.tag_id in ({positive_values})
+        '''.format(
+        positive_values=','.join("'"+TAGS.get(i, '0')+"'" for i in positive_values.values())
+    )
     query+='''
             GROUP BY git.image_id
         ) as data
-
         JOIN gallery_image as i ON i.id = data.image_id
         JOIN gallery_image_tags AS all_git ON all_git.image_id = data.image_id
         JOIN gallery_tag AS all_tags ON all_git.tag_id = all_tags.id
@@ -86,14 +85,12 @@ def index(request):
         GROUP BY i.id
     '''
 
-    # Оставляем только те, которые не содержат не нужные теги.
     if negative_values:
         query += 'HAVING \n'
         query += "sum(if(all_git.tag_id in({negative_values}),1,0)) = 0 \n".format(
             negative_values=','.join("'"+TAGS.get(i, '0')+"'" for i in negative_values.values())
         )
 
-    # Сортируем подрезаем
     query += '''
         ORDER BY {order_by} DESC
         LIMIT 20
@@ -102,9 +99,7 @@ def index(request):
             offset=(page-1)*20,
             order_by=order_by
         )
-
     print(query)
-
     image_list = []
     for image in Image.objects.raw(query):
         image.tags_list = sorted(image.i_tags.split(','))
